@@ -36,6 +36,10 @@ class CourseResource:
 
     @staticmethod
     def _get_connection():
+        """
+        Get a connection to the database
+        :return: a connection to the database
+        """
         usr = os.environ.get("DBUSER")
         pw = os.environ.get("DBPW")
         h = os.environ.get("DBHOST")
@@ -51,6 +55,10 @@ class CourseResource:
 
     @staticmethod
     def get_all_sections():
+        """
+        Returns a list of all sections in the database.
+        :return: list of all sections
+        """
         sql = "SELECT * FROM f22_databases.sections";
         conn = CourseResource._get_connection()
         cur = conn.cursor()
@@ -61,6 +69,11 @@ class CourseResource:
 
     @staticmethod
     def get_section_by_call_no(call_no):
+        """
+        Returns a section with the given call number.
+        :param call_no: call number of the section
+        :return: section
+        """
         sql = "SELECT * FROM f22_databases.sections WHERE call_no=%s";
         conn = CourseResource._get_connection()
         cur = conn.cursor()
@@ -71,6 +84,11 @@ class CourseResource:
 
     @staticmethod
     def get_enrollments_by_call_no(call_no):
+        """
+        Returns a list of enrollments for the given call number.
+        :param call_no: call_no of the section
+        :return: a list of enrollments
+        """
         sql = "SELECT * FROM f22_databases.enrollments WHERE call_no=%s";
         conn = CourseResource._get_connection()
         cur = conn.cursor()
