@@ -5,7 +5,8 @@ import os
 
 class CourseResource:
     """
-    Sections table:
+    Create tables for course resource:
+
     create table sections
     (
         call_no int      not null
@@ -13,7 +14,6 @@ class CourseResource:
         title   char(24) null
     );
 
-    Projects table:
     create table projects
     (
     `project id`   int  not null
@@ -21,7 +21,6 @@ class CourseResource:
     `project name` char null
     );
 
-    Enrollments table:
     create table enrollments
     (
     call_no    int      not null,
