@@ -15,6 +15,40 @@ class JobResource:
     def __int__(self):
         pass
 
+    @classmethod
+    def create_new_job(cls, job_data: dict):
+        item = {
+            "job_id": {
+                "S": job_data["job_id"]
+            },
+            "company_name": {
+                "S": job_data["company_name"],
+            },
+            "title": {
+                "S": job_data["title"]
+            },
+            "job_description": {
+                "S": job_data["job_description"]
+            },
+        }
+
+        # create a new item in the table
+        try:
+            response = cls._get_connection().put_item(
+                TableName="job",
+                Item=item,
+                # check if the job already exists
+                ConditionExpression="attribute_not_exists(job_id)"
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "ConditionalCheckFailedException":
+                return "Job already exists"
+            else:
+                return "Unknown error"
+        # Append the new item to the response
+        response["Item"] = item
+        return response
+
     @staticmethod
     def _get_connection():
         """
@@ -39,37 +73,58 @@ class JobResource:
         return response
 
     @classmethod
-    def create_new_job(cls, job_data: dict):
-        item = {
-            "job_id": {
-                "S": job_data["job_id"]
-            },
-            "company_name": {
-                "S": job_data["company_name"],
-            },
-            "role": {
-                "S": job_data["role"]
-            },
-            "job_description": {
-                "S": job_data["job_description"]
-            },
-        }
-
-        # create a new item in the table
+    def update_job(cls, job_id: str, job_data: dict):
+        # update the item in the table
         try:
-            response = cls._get_connection().put_item(
+            response = cls._get_connection().update_item(
                 TableName="job",
-                Item=item,
+                Key={
+                    "job_id": {
+                        "S": job_id
+                    }
+                },
                 # check if the job already exists
-                ConditionExpression="attribute_not_exists(job_id)"
+                ConditionExpression="attribute_exists(job_id)",
+                UpdateExpression="set company_name = :company_name, title = :title, job_description = "
+                                 ":job_description",
+                ExpressionAttributeValues={
+                    ":company_name": {
+                        "S": job_data["company_name"]
+                    },
+                    ":title": {
+                        "S": job_data["title"]
+                    },
+                    ":job_description": {
+                        "S": job_data["job_description"]
+                    }
+                },
+                ReturnValues="UPDATED_NEW"
             )
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == "ConditionalCheckFailedException":
-                return "Job already exists"
+                return "Job does not exist"
             else:
                 return "Unknown error"
-        # Append the new item to the response
-        response["Item"] = item
+        return response
+
+    @classmethod
+    def delete_job(cls, job_id: str):
+        try:
+            response = cls._get_connection().delete_item(
+                TableName="job",
+                Key={
+                    "job_id": {
+                        "S": job_id
+                    }
+                },
+                # check if the job exists
+                ConditionExpression="attribute_exists(job_id)"
+            )
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "ConditionalCheckFailedException":
+                return "Job does not exist"
+            else:
+                return "Unknown error"
         return response
 
     @classmethod
@@ -78,7 +133,7 @@ class JobResource:
         sns_client = boto3.client("sns", region_name=aws_region, aws_access_key_id=aws_access_key_id,
                                   aws_secret_access_key=aws_secret_access_key)
         job_data = job_data["Item"]
-        msg = f"New job posted: {job_data['role']['S']} at {job_data['company_name']['S']}"
+        msg = f"New job posted: {job_data['title']['S']} at {job_data['company_name']['S']}"
 
         # publish the job to SNS
         response = sns_client.publish(
