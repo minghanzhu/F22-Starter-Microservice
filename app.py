@@ -71,7 +71,43 @@ def create_job():
         # AWS SNS publish to topic
         JobResource.publish_job_to_sns(result)
     else:
-        rsp = Response("CONFLICT", status=409, content_type="text/plain")
+        rsp = Response(result, status=409, content_type="text/plain")
+    return rsp
+
+
+# Get a job by job_id
+@app.route("/api/jobs/<job_id>", methods=["GET"])
+def get_job_by_id(job_id):
+    print("job_id: ", job_id)
+    result = JobResource.get_job_by_id(job_id)
+    if result:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+    return rsp
+
+
+# Update a job
+@app.route("/api/jobs/<job_id>", methods=["PUT"])
+def update_job(job_id):
+    print("Update job")
+    result = JobResource.update_job(job_id, request.json)
+    if type(result) == dict:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response(result, status=404, content_type="text/plain")
+    return rsp
+
+
+# Delete a job
+@app.route("/api/jobs/<job_id>", methods=["DELETE"])
+def delete_job(job_id):
+    print("Delete job")
+    result = JobResource.delete_job(job_id)
+    if type(result) == dict:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response(result, status=404, content_type="text/plain")
     return rsp
 
 
