@@ -1,6 +1,8 @@
+import json
 import os
 import boto3
 import botocore
+from botocore.exceptions import ClientError
 
 aws_region = "us-east-1"
 # read the aws credentials from environment variables
@@ -68,4 +70,20 @@ class JobResource:
                 return "Unknown error"
         # Append the new item to the response
         response["Item"] = item
+        return response
+
+    @classmethod
+    def publish_job_to_sns(cls, job_data: dict):
+        # publish the job to SNS
+        sns_client = boto3.client("sns", region_name=aws_region, aws_access_key_id=aws_access_key_id,
+                                  aws_secret_access_key=aws_secret_access_key)
+        job_data = job_data["Item"]
+        msg = f"New job posted: {job_data['role']['S']} at {job_data['company_name']['S']}"
+
+        # publish the job to SNS
+        response = sns_client.publish(
+            TopicArn="arn:aws:sns:us-east-1:214792602728:new-job-alert-topic",
+            Message=json.dumps(msg),
+            Subject="New job posted"
+        )
         return response
