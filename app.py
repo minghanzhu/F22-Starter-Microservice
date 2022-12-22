@@ -36,18 +36,6 @@ def get_health():
     return result
 
 
-# Get all job applications for an applicant
-@app.route("/api/applications/<applicant_id>/applied", methods=["GET"])
-def get_applications_by_applicant_id(applicant_id):
-    print("applicant_id: ", applicant_id)
-    result = JobApplicationResource.get_applications_by_applicant_id(applicant_id)
-    if result:
-        rsp = Response(json.dumps(result), status=200, content_type="application.json")
-    else:
-        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
-    return rsp
-
-
 # Create a new job application
 @app.route("/api/applications", methods=["POST"])
 def create_application():
@@ -61,13 +49,27 @@ def create_application():
     return rsp
 
 
+# Get all job applications for a job
+@app.route("/api/applications/<job_id>/posted", methods=["GET"])
+def get_applications_by_job_id(job_id):
+    print("job_id: ", job_id)
+    result = JobApplicationResource.get_applications_by_job_id(job_id)
+    if result:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+    return rsp
+
+
 # Create a new job
 @app.route("/api/jobs", methods=["POST"])
 def create_job():
     print("Create job")
     result = JobResource.create_new_job(request.json)
-    if result:
+    if type(result) == dict:
         rsp = Response(json.dumps(result), status=200, content_type="application.json")
+        # AWS SNS publish to topic
+        JobResource.publish_job_to_sns(result)
     else:
         rsp = Response("CONFLICT", status=409, content_type="text/plain")
     return rsp
