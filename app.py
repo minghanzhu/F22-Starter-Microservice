@@ -87,6 +87,18 @@ def get_job_by_id(job_id):
     return rsp
 
 
+# Get all jobs
+@app.route("/api/jobs", methods=["GET"])
+def get_all_jobs():
+    print("Get all jobs")
+    result = JobResource.get_all_jobs()
+    if result:
+        rsp = Response(json.dumps(result), status=200, content_type="application.json")
+    else:
+        rsp = Response("NOT FOUND", status=404, content_type="text/plain")
+    return rsp
+
+
 # Update a job
 @app.route("/api/jobs/<job_id>", methods=["PUT"])
 def update_job(job_id):
