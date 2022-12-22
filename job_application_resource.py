@@ -27,20 +27,6 @@ class JobApplicationResource:
         return client
 
     @classmethod
-    def get_applications_by_applicant_id(cls, applicant_id):
-        print("applicant_id: ", applicant_id)
-        response = cls._get_connection().scan(
-            TableName="application",
-            FilterExpression="applicant_id = :applicant_id",
-            ExpressionAttributeValues={
-                ":applicant_id": {
-                    "S": applicant_id
-                }
-            }
-        )
-        return response
-
-    @classmethod
     def create_new_application(cls, application_data: dict):
         # create a random id for the application
         application_id = "app_" + str(uuid.uuid4())
@@ -82,4 +68,32 @@ class JobApplicationResource:
         )
         # Append the new item to the response
         response["Item"] = item
+        return response
+
+    @classmethod
+    def get_applications_by_applicant_id(cls, applicant_id):
+        print("applicant_id: ", applicant_id)
+        response = cls._get_connection().scan(
+            TableName="application",
+            FilterExpression="applicant_id = :applicant_id",
+            ExpressionAttributeValues={
+                ":applicant_id": {
+                    "S": applicant_id
+                }
+            }
+        )
+        return response
+
+    @classmethod
+    def get_applications_by_job_id(cls, job_id):
+        print("job_id: ", job_id)
+        response = cls._get_connection().scan(
+            TableName="application",
+            FilterExpression="job_id = :job_id",
+            ExpressionAttributeValues={
+                ":job_id": {
+                    "S": job_id
+                }
+            }
+        )
         return response
