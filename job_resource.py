@@ -15,6 +15,17 @@ class JobResource:
     def __int__(self):
         pass
 
+    @staticmethod
+    def _get_connection():
+        """
+        Get a connection to the database
+        :return: a connection to the database
+        """
+        # connect to the dynamodb database
+        client = boto3.client("dynamodb", region_name=aws_region, aws_access_key_id=aws_access_key_id,
+                              aws_secret_access_key=aws_secret_access_key)
+        return client
+
     @classmethod
     def create_new_job(cls, job_data: dict):
         item = {
@@ -49,17 +60,6 @@ class JobResource:
         response["Item"] = item
         return response
 
-    @staticmethod
-    def _get_connection():
-        """
-        Get a connection to the database
-        :return: a connection to the database
-        """
-        # connect to the dynamodb database
-        client = boto3.client("dynamodb", region_name=aws_region, aws_access_key_id=aws_access_key_id,
-                              aws_secret_access_key=aws_secret_access_key)
-        return client
-
     @classmethod
     def get_job_by_id(cls, job_id):
         response = cls._get_connection().get_item(
@@ -69,6 +69,13 @@ class JobResource:
                     "S": job_id
                 }
             }
+        )
+        return response
+
+    @classmethod
+    def get_all_jobs(cls):
+        response = cls._get_connection().scan(
+            TableName="job"
         )
         return response
 
